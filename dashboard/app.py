@@ -51,7 +51,7 @@ def fetch_partidos():
     sb = get_supabase()
     res = (
         sb.table("partidos")
-        .select("partido_id, match_time_utc, home_team_id, away_team_id")
+        .select("partido_id, match_time_utc, equipo_local_id, equipo_visitante_id")
         .eq("competicion_id", COMPETICION_ID)
         .filter("timestamp_ingestion", "not.is", "null")
         .order("match_time_utc", desc=True)
@@ -300,8 +300,8 @@ if not partidos:
 
 
 def partido_label(p):
-    home  = TEAM_NAMES.get(p["home_team_id"], "?")
-    away  = TEAM_NAMES.get(p["away_team_id"], "?")
+    home  = TEAM_NAMES.get(p["equipo_local_id"], "?")
+    away  = TEAM_NAMES.get(p["equipo_visitante_id"], "?")
     fecha = (p.get("match_time_utc") or "")[:10]
     return f"{fecha}  ·  {home} vs {away}"
 
@@ -314,8 +314,8 @@ with st.sidebar:
     partido  = partidos[labels.index(selected)]
 
 partido_id = partido["partido_id"]
-home_id    = partido["home_team_id"]
-away_id    = partido["away_team_id"]
+home_id    = partido["equipo_local_id"]
+away_id    = partido["equipo_visitante_id"]
 home_name  = TEAM_NAMES.get(home_id, "?")
 away_name  = TEAM_NAMES.get(away_id, "?")
 
