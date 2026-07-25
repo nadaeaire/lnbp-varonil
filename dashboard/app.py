@@ -53,7 +53,7 @@ def fetch_partidos():
         sb.table("partidos")
         .select("partido_id, match_time_utc, home_team_id, away_team_id")
         .eq("competicion_id", COMPETICION_ID)
-        .not_.is_("timestamp_ingestion", "null")
+        .filter("timestamp_ingestion", "not.is", "null")
         .order("match_time_utc", desc=True)
         .execute()
     )
