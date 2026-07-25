@@ -6,13 +6,8 @@ Uso:
     streamlit run app.py
 """
 
-import sys
-import os
 import streamlit as st
 import pandas as pd
-
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-from config import SUPABASE_URL, SUPABASE_KEY
 from supabase import create_client
 
 # ── CONSTANTES ───────────────────────────────────────────────────────────────
@@ -45,7 +40,10 @@ DISPLAY_COLS_TEAM = [
 
 @st.cache_resource
 def get_supabase():
-    return create_client(SUPABASE_URL, SUPABASE_KEY)
+    return create_client(
+        st.secrets["SUPABASE_URL"],
+        st.secrets["SUPABASE_KEY"],
+    )
 
 
 @st.cache_data(ttl=300)
