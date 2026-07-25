@@ -1,0 +1,7 @@
+# Ignorar todo lo que esté en el repo...
+*
+
+# ...excepto el dashboard y este mismo archivo
+!.gitignore
+!/dashboard/
+!dashboard/**
