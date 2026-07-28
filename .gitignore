@@ -5,3 +5,5 @@
 !.gitignore
 !/dashboard/
 !dashboard/**
+!/dashboard/pages/
+!dashboard/pages/**

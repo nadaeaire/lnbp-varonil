@@ -1,6 +1,6 @@
 """
 Dashboard de Partidos — LNBP Varonil
-Estadísticas por cuarto y por mitades, nivel equipo y jugador.
+Vista: estadísticas de un partido por cuartos y mitades.
 
 Uso:
     streamlit run app.py
@@ -8,43 +8,17 @@ Uso:
 
 import streamlit as st
 import pandas as pd
-from supabase import create_client
+import sys
+import os
 
-# ── CONSTANTES ───────────────────────────────────────────────────────────────
-
-COMPETICION_ID = 1
-
-TEAM_NAMES = {
-    1: "Abejas", 2: "Astros", 3: "Correcaminos", 4: "Diablos",
-    5: "Dorados", 6: "El Calor", 7: "Freseros", 8: "Fuerza Regia",
-    9: "Gambusinos", 10: "Lobos", 11: "Mineros", 12: "Panteras",
-    13: "Santos", 14: "Soles",
-}
-
-FALTAS_COM = {"personal", "technical", "benchTechnical",
-              "disqualifying", "unsportsmanlike", "offensive"}
-
-DISPLAY_COLS = [
-    "MIN", "PTS", "REB", "REBO", "REBD",
-    "AST", "TOV", "STL", "BLK", "FC", "FD",
-    "FG", "2P", "3P", "TL",
-]
-
-DISPLAY_COLS_TEAM = [
-    "PTS", "REB", "REBO", "REBD",
-    "AST", "TOV", "STL", "BLK", "FC", "FD",
-    "FG", "2P", "3P", "TL",
-]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from utils import (
+    get_supabase, TEAM_NAMES, COMPETICION_ID, PERIOD_SETS,
+    aggregate_acciones, aggregate_stints,
+    empty_stats, fmt_min, fmt_shot, row_display,
+)
 
 # ── SUPABASE ─────────────────────────────────────────────────────────────────
-
-@st.cache_resource
-def get_supabase():
-    return create_client(
-        st.secrets["SUPABASE_URL"],
-        st.secrets["SUPABASE_KEY"],
-    )
-
 
 @st.cache_data(ttl=300)
 def fetch_partidos():
@@ -102,144 +76,7 @@ def fetch_players(player_ids: list):
     }
 
 
-# ── ESTADÍSTICAS ─────────────────────────────────────────────────────────────
-
-def empty_stats():
-    return {
-        "PTS": 0, "REB": 0, "REBO": 0, "REBD": 0,
-        "AST": 0, "TOV": 0, "STL": 0, "BLK": 0,
-        "FC": 0, "FD": 0,
-        "FGM": 0, "FGA": 0,
-        "2PM": 0, "2PA": 0,
-        "3PM": 0, "3PA": 0,
-        "FTM": 0, "FTA": 0,
-    }
-
-
-def _pts(at, suc):
-    if at == "2pt"      and suc: return 2
-    if at == "3pt"      and suc: return 3
-    if at == "freeThrow" and suc: return 1
-    return 0
-
-
-def aggregate_acciones(acciones, periods=None):
-    """
-    Agrega acciones por (equipo_id, player_id).
-    player_id=None → stats de equipo.
-    periods=None  → todos los cuartos.
-    """
-    result: dict[tuple, dict] = {}
-
-    for row in acciones:
-        p = row.get("period", 0)
-        if periods is not None and p not in periods:
-            continue
-
-        eq  = row.get("equipo_id")
-        pl  = row.get("player_id")
-        at  = (row.get("actiontype") or "").strip()
-        st  = (row.get("subtype")    or "").strip()
-        suc = bool(row.get("success"))
-
-        keys = [(eq, None)]
-        if pl:
-            keys.append((eq, pl))
-
-        for key in keys:
-            if key not in result:
-                result[key] = empty_stats()
-            s = result[key]
-
-            s["PTS"] += _pts(at, suc)
-
-            if at in ("2pt", "3pt"):
-                s["FGA"] += 1
-                if suc: s["FGM"] += 1
-                if at == "2pt":
-                    s["2PA"] += 1
-                    if suc: s["2PM"] += 1
-                else:
-                    s["3PA"] += 1
-                    if suc: s["3PM"] += 1
-            elif at == "freeThrow":
-                s["FTA"] += 1
-                if suc: s["FTM"] += 1
-            elif at == "rebound":
-                s["REB"] += 1
-                if   st == "offensive":  s["REBO"] += 1
-                elif st == "defensive":  s["REBD"] += 1
-            elif at == "turnover":  s["TOV"] += 1
-            elif at == "steal":     s["STL"] += 1
-            elif at == "block":     s["BLK"] += 1
-            elif at == "assist":    s["AST"] += 1
-            elif at == "foul":
-                if   st == "drawn":     s["FD"] += 1
-                elif st in FALTAS_COM:  s["FC"] += 1
-
-    return result
-
-
-def aggregate_stints(stints, periods=None):
-    """Devuelve {(equipo_id, player_id): minutos_totales}."""
-    result: dict[tuple, float] = {}
-    for row in stints:
-        p  = row.get("period", 0)
-        if periods is not None and p not in periods:
-            continue
-        pl = row.get("player_id")
-        eq = row.get("equipo_id")
-        mn = float(row.get("minutos") or 0)
-        if pl and eq:
-            key = (eq, pl)
-            result[key] = result.get(key, 0.0) + mn
-    return result
-
-
-# ── FORMATO ──────────────────────────────────────────────────────────────────
-
-def fmt_min(m: float) -> str:
-    mins = int(m)
-    secs = round((m - mins) * 60)
-    if secs == 60:
-        mins += 1
-        secs = 0
-    return f"{mins}:{secs:02d}"
-
-
-def fmt_shot(made, att) -> str:
-    return f"{made}/{att}"
-
-
-def row_display(s: dict, include_min: bool = False, min_val: float = 0.0) -> dict:
-    d = {}
-    if include_min:
-        d["MIN"] = fmt_min(min_val)
-    d["PTS"]  = s["PTS"]
-    d["REB"]  = s["REB"]
-    d["REBO"] = s["REBO"]
-    d["REBD"] = s["REBD"]
-    d["AST"]  = s["AST"]
-    d["TOV"]  = s["TOV"]
-    d["STL"]  = s["STL"]
-    d["BLK"]  = s["BLK"]
-    d["FC"]   = s["FC"]
-    d["FD"]   = s["FD"]
-    d["FG"]   = fmt_shot(s["FGM"], s["FGA"])
-    d["2P"]   = fmt_shot(s["2PM"], s["2PA"])
-    d["3P"]   = fmt_shot(s["3PM"], s["3PA"])
-    d["TL"]   = fmt_shot(s["FTM"], s["FTA"])
-    return d
-
-
 # ── TABLAS ───────────────────────────────────────────────────────────────────
-
-PERIOD_SETS = {
-    "Q1": {1}, "Q2": {2}, "1H": {1, 2},
-    "Q3": {3}, "Q4": {4}, "2H": {3, 4},
-    "Total": None,
-}
-
 
 def team_table(acciones, team_id, has_ot, max_period):
     sets = dict(PERIOD_SETS)
@@ -275,11 +112,11 @@ def player_table(acciones, stints, team_id, player_names, periods):
         m = mins.get((team_id, pid), 0.0)
         row = {"Jugador": player_names.get(pid, f"ID {pid}")}
         row.update(row_display(s, include_min=True, min_val=m))
-        row["_min_raw"] = m
+        row["_sort"] = m
         rows.append(row)
 
     df = pd.DataFrame(rows).set_index("Jugador")
-    df = df.sort_values("_min_raw", ascending=False).drop(columns=["_min_raw"])
+    df = df.sort_values("_sort", ascending=False).drop(columns=["_sort"])
     return df
 
 
@@ -291,7 +128,7 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("🏀 Dashboard de Partidos — LNBP Varonil")
+st.title("🏀 Partido — por cuartos")
 
 partidos = fetch_partidos()
 if not partidos:
@@ -306,7 +143,7 @@ def partido_label(p):
     return f"{fecha}  ·  {home} vs {away}"
 
 
-labels = [partido_label(p) for p in partidos]
+labels   = [partido_label(p) for p in partidos]
 
 with st.sidebar:
     st.header("Partido")
@@ -333,7 +170,7 @@ player_ids   = list({r["player_id"] for r in acciones if r.get("player_id")}
                   | {r["player_id"] for r in stints   if r.get("player_id")})
 player_names = fetch_players(player_ids)
 
-# ── Marcador final ────────────────────────────────────────────────────────────
+# Marcador final
 all_stats = aggregate_acciones(acciones)
 home_pts  = all_stats.get((home_id, None), empty_stats())["PTS"]
 away_pts  = all_stats.get((away_id, None), empty_stats())["PTS"]
@@ -342,32 +179,25 @@ col1, col2, col3 = st.columns([3, 1, 3])
 with col1:
     st.metric(home_name, home_pts)
 with col2:
-    st.markdown("<div style='text-align:center;padding-top:20px;font-size:1.2rem'>VS</div>",
-                unsafe_allow_html=True)
+    st.markdown(
+        "<div style='text-align:center;padding-top:20px;font-size:1.2rem'>VS</div>",
+        unsafe_allow_html=True,
+    )
 with col3:
     st.metric(away_name, away_pts)
 
 st.divider()
 
-# ── Tabs ─────────────────────────────────────────────────────────────────────
 tab_eq, tab_jug = st.tabs(["Equipo — por cuartos", "Jugadores — por cuartos"])
 
 with tab_eq:
     col_h, col_a = st.columns(2)
-
     with col_h:
         st.subheader(home_name)
-        st.dataframe(
-            team_table(acciones, home_id, has_ot, max_period),
-            use_container_width=True,
-        )
-
+        st.dataframe(team_table(acciones, home_id, has_ot, max_period), use_container_width=True)
     with col_a:
         st.subheader(away_name)
-        st.dataframe(
-            team_table(acciones, away_id, has_ot, max_period),
-            use_container_width=True,
-        )
+        st.dataframe(team_table(acciones, away_id, has_ot, max_period), use_container_width=True)
 
 with tab_jug:
     period_opts = list(PERIOD_SETS.keys())
@@ -375,26 +205,14 @@ with tab_jug:
         period_opts.insert(-1, "OT")
 
     selected_per = st.radio("Cuarto / Mitad", period_opts, horizontal=True)
-
-    if selected_per == "OT":
-        periods = set(range(5, max_period + 1))
-    else:
-        periods = PERIOD_SETS[selected_per]
+    periods = set(range(5, max_period + 1)) if selected_per == "OT" else PERIOD_SETS[selected_per]
 
     col_h, col_a = st.columns(2)
-
     with col_h:
         st.subheader(home_name)
         df_h = player_table(acciones, stints, home_id, player_names, periods)
-        if df_h.empty:
-            st.info("Sin datos.")
-        else:
-            st.dataframe(df_h, use_container_width=True)
-
+        st.dataframe(df_h, use_container_width=True) if not df_h.empty else st.info("Sin datos.")
     with col_a:
         st.subheader(away_name)
         df_a = player_table(acciones, stints, away_id, player_names, periods)
-        if df_a.empty:
-            st.info("Sin datos.")
-        else:
-            st.dataframe(df_a, use_container_width=True)
+        st.dataframe(df_a, use_container_width=True) if not df_a.empty else st.info("Sin datos.")
