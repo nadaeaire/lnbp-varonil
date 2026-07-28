@@ -190,14 +190,20 @@ st.divider()
 
 tab_eq, tab_jug = st.tabs(["Equipo — por cuartos", "Jugadores — por cuartos"])
 
+def dh(df):
+    return 38 + 35 * max(len(df), 1)
+
+
 with tab_eq:
     col_h, col_a = st.columns(2)
     with col_h:
         st.subheader(home_name)
-        st.dataframe(team_table(acciones, home_id, has_ot, max_period), use_container_width=True)
+        df_ht = team_table(acciones, home_id, has_ot, max_period)
+        st.dataframe(df_ht, height=dh(df_ht), use_container_width=True)
     with col_a:
         st.subheader(away_name)
-        st.dataframe(team_table(acciones, away_id, has_ot, max_period), use_container_width=True)
+        df_at = team_table(acciones, away_id, has_ot, max_period)
+        st.dataframe(df_at, height=dh(df_at), use_container_width=True)
 
 with tab_jug:
     period_opts = list(PERIOD_SETS.keys())
@@ -211,8 +217,8 @@ with tab_jug:
     with col_h:
         st.subheader(home_name)
         df_h = player_table(acciones, stints, home_id, player_names, periods)
-        st.dataframe(df_h, use_container_width=True) if not df_h.empty else st.info("Sin datos.")
+        st.dataframe(df_h, height=dh(df_h), use_container_width=True) if not df_h.empty else st.info("Sin datos.")
     with col_a:
         st.subheader(away_name)
         df_a = player_table(acciones, stints, away_id, player_names, periods)
-        st.dataframe(df_a, use_container_width=True) if not df_a.empty else st.info("Sin datos.")
+        st.dataframe(df_a, height=dh(df_a), use_container_width=True) if not df_a.empty else st.info("Sin datos.")

@@ -139,13 +139,18 @@ with tab_eq:
         rows_tot.append({"Periodo": label, **row_display(s)})
         rows_avg.append({"Periodo": label, **avg_display(s, n_games)})
 
+    def dh(df):
+        return 38 + 35 * max(len(df), 1)
+
     col1, col2 = st.columns(2)
+    df_tot = pd.DataFrame(rows_tot).set_index("Periodo")
+    df_avg = pd.DataFrame(rows_avg).set_index("Periodo")
     with col1:
         st.subheader("Totales")
-        st.dataframe(pd.DataFrame(rows_tot).set_index("Periodo"), use_container_width=True)
+        st.dataframe(df_tot, height=dh(df_tot), use_container_width=True)
     with col2:
         st.subheader("Promedio por partido")
-        st.dataframe(pd.DataFrame(rows_avg).set_index("Periodo"), use_container_width=True)
+        st.dataframe(df_avg, height=dh(df_avg), use_container_width=True)
 
 # ── Tab jugadores ─────────────────────────────────────────────────────────────
 with tab_jug:
@@ -170,6 +175,6 @@ with tab_jug:
     if rows:
         df = pd.DataFrame(rows).set_index("Jugador")
         df = df.sort_values("_sort", ascending=False).drop(columns=["_sort"])
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, height=dh(df), use_container_width=True)
     else:
         st.info("Sin datos para este período.")
