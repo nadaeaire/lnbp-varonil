@@ -1,9 +1,11 @@
 # Ignorar todo lo que esté en el repo...
 *
 
-# ...excepto el dashboard y este mismo archivo
+# ...excepto el dashboard, la app y este mismo archivo
 !.gitignore
 !/dashboard/
 !dashboard/**
 !/dashboard/pages/
 !dashboard/pages/**
+!/app/
+!app/**
