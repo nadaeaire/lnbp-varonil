@@ -157,6 +157,12 @@ def cargar_base_datos():
     try:
         df_master = pd.DataFrame(all_data)
 
+        # DEBUG TEMP — borrar después
+        _sm_raw = all_data[0].get('sMinutes') if all_data else 'NO DATA'
+        _sm_col = df_master['sMinutes'].dtype if 'sMinutes' in df_master.columns else 'FALTA'
+        _sm_sample = df_master['sMinutes'].head(2).tolist() if 'sMinutes' in df_master.columns else []
+        st.warning(f"DB_LOADER: raw_sMin={repr(_sm_raw)} | df_dtype={_sm_col} | df_sample={_sm_sample}")
+
         # Normalizar id_abe a string entero limpio (evita "2323805.0" si la vista devuelve float)
         if 'id_abe' in df_master.columns:
             df_master['id_abe'] = df_master['id_abe'].astype(str).str.split('.').str[0]
