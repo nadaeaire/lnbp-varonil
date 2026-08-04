@@ -69,8 +69,9 @@ if not df_equipos_raw.empty and 'id_abe' in df_equipos_raw.columns and 'temporad
     _tl = df_equipos_raw[['id_abe', 'temporada_id']].dropna(subset=['temporada_id']).drop_duplicates('id_abe')
     _temporada_lookup = dict(zip(_tl['id_abe'], _tl['temporada_id'].astype(int)))
 
-# TODO: ajustar con las fechas reales de inicio de cada temporada LNBP
-_TEMP_SEASON_STARTS: dict[int, pd.Timestamp] = {}
+_TEMP_SEASON_STARTS: dict[int, pd.Timestamp] = {
+    1: pd.Timestamp('2026-07-23'),
+}
 
 def _fecha_a_temp_id(f):
     if pd.isna(f) or not _TEMP_SEASON_STARTS:
