@@ -319,8 +319,7 @@ def _cargar_equipos_desde_tablas_raw():
             return 'Otro'
     df_r['Categoria'] = df_r['competicion_id'].apply(_cat)
 
-    # TODO: llenar con los competicion_id reales de LNBP → temporada_id
-    _COMP_TO_TEMP_ID: dict[int, int] = {}
+    _COMP_TO_TEMP_ID: dict[int, int] = {1: 1}
     def _temp_id(cid):
         try:
             return _COMP_TO_TEMP_ID.get(int(float(cid)))
@@ -397,8 +396,7 @@ def cargar_datos_equipos_only():
     except Exception:
         pass
 
-    # TODO: llenar con los competicion_id reales de LNBP → temporada_id
-    _COMP_TO_TEMP_ID: dict[int, int] = {}
+    _COMP_TO_TEMP_ID: dict[int, int] = {1: 1}
     for vista in ("vista_equipos_mat", "vista_equipos_master"):
         try:
             all_data = _fetch_all_rows(vista, select_cols=_COLS_EQUIPOS)

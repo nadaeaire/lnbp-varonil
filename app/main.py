@@ -220,8 +220,7 @@ else:
         view_equipos_4f.render_view(df_eq if not df_eq.empty else df, categoria_sel)
 
     elif opcion == "🎯 Mapa de Tiros Beta":
-        # TODO: llenar con los competicion_ids reales de LNBP por temporada
-        _TEMP_TO_COMP: dict[int, tuple] = {}
+        _TEMP_TO_COMP: dict[int, tuple] = {1: (1,)}
         _comp_ids_tiros = _TEMP_TO_COMP.get(temporada_sel_id, ()) if temporada_sel_id else ()
         df_tiros = cargar_tiros(competicion_ids=_comp_ids_tiros)
         if etapa_sel != "Toda la Temporada" and not df_tiros.empty and not df_etapas.empty:
