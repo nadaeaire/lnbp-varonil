@@ -6,3 +6,5 @@ matplotlib
 supabase
 scipy
 pytz
+gspread
+oauth2client
