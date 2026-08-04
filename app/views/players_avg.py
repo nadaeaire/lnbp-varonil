@@ -92,6 +92,9 @@ def render_view(df, df_players, df_rosters, categoria_sel):
     else:
         df_view = df
 
+    # DEBUG TEMPORAL — borrar después
+    st.caption(f"🔍 df filas={len(df_view)} | sMinutes dtype={df_view['sMinutes'].dtype if 'sMinutes' in df_view.columns else 'SIN COLUMNA'} | muestra={df_view['sMinutes'].head(3).tolist() if 'sMinutes' in df_view.columns else []}")
+
     df_active_games = df_view[df_view['sMinutes'] > 0].copy()
     if games_window < max_games_found:
         df_active_games = df_active_games.sort_values(by='Fecha', ascending=False)
