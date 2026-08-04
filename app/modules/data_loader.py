@@ -8,16 +8,26 @@ from datetime import datetime
 # --- UTILIDAD INTERNA ---
 def vectorizar_minutos(series):
     """Convierte minutos formato texto/float a float decimal."""
-    mask_is_float = ~series.astype(str).str.contains(':')
-    result_minutes = pd.Series(0.0, index=series.index)
-    result_minutes.loc[mask_is_float] = pd.to_numeric(series.loc[mask_is_float], errors='coerce').fillna(0.0)
-    m_s_part = series.loc[~mask_is_float].astype(str).str.split(':').str[:2].str.join(':')
-    try:
-        duration = pd.to_timedelta('00:' + m_s_part)
-        result_minutes.loc[~mask_is_float] = duration.dt.total_seconds() / 60.0
-    except:
-        result_minutes.loc[~mask_is_float] = 0.0
-    return result_minutes.fillna(0.0)
+    def _parse(v):
+        if v is None or (isinstance(v, float) and np.isnan(v)):
+            return 0.0
+        s = str(v).strip()
+        if not s or s in ('None', 'nan', 'NaN', ''):
+            return 0.0
+        if ':' in s:
+            parts = s.split(':')
+            try:
+                if len(parts) == 2:        # MM:SS
+                    return int(parts[0]) + int(parts[1]) / 60.0
+                elif len(parts) >= 3:       # HH:MM:SS
+                    return int(parts[0]) * 60 + int(parts[1]) + int(parts[2]) / 60.0
+            except Exception:
+                return 0.0
+        try:
+            return float(s)
+        except Exception:
+            return 0.0
+    return series.apply(_parse).fillna(0.0)
 
 def _fetch_all_rows(table_name, select_cols="*", page_size=1000, max_pages=200):
     """Descarga TODAS las filas de una tabla paginando en bloques.

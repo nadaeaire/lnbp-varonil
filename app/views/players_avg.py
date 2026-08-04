@@ -5,6 +5,8 @@ import math
 import modules.utils as utils 
 
 def render_view(df, df_players, df_rosters, categoria_sel):
+    # DEBUG TEMPORAL
+    st.error(f"DEBUG: filas={len(df)} | cols={list(df.columns[:5])} | sMinutes_dtype={df['sMinutes'].dtype if 'sMinutes' in df.columns else 'FALTA'} | sMinutes_sample={df['sMinutes'].head(2).tolist() if 'sMinutes' in df.columns else []}")
     st.title(f"Leaderboard por partido | {categoria_sel}")
 
     # --- 0. PREPARACIÓN DE METADATA ---
