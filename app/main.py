@@ -1,3 +1,7 @@
+import os, sys
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import streamlit as st
 import pandas as pd
 import modules.utils as utils
