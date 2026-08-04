@@ -46,6 +46,15 @@ if 'selected_player_id' not in st.session_state:
 if 'view_mode' not in st.session_state:
     st.session_state.view_mode = 'main'
 
+# DEBUG TEMP — borrar después
+try:
+    from modules.data_loader import get_supabase_client as _gsc
+    _dsb = _gsc()
+    _dr = _dsb.table("vista_analitica_master").select("sMinutes").limit(3).execute()
+    st.warning(f"RAW API: {_dr.data}")
+except Exception as _de:
+    st.warning(f"RAW API ERROR: {_de}")
+
 try:
     import concurrent.futures
     with st.spinner('Cargando base de datos...'):
