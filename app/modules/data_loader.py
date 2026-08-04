@@ -133,7 +133,7 @@ def cargar_base_datos():
     """
     all_data = None
 
-    for vista in ("vista_analitica_mat", "vista_analitica_master"):
+    for vista in ("vista_analitica_master", "vista_analitica_mat"):
         try:
             all_data = _fetch_all_rows(vista, select_cols=_COLS_ANALITICA)
             if all_data:
@@ -397,7 +397,7 @@ def cargar_datos_equipos_only():
         pass
 
     _COMP_TO_TEMP_ID: dict[int, int] = {1: 1}
-    for vista in ("vista_equipos_mat", "vista_equipos_master"):
+    for vista in ("vista_equipos_master", "vista_equipos_mat"):
         try:
             all_data = _fetch_all_rows(vista, select_cols=_COLS_EQUIPOS)
             if all_data:
