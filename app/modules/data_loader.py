@@ -133,7 +133,7 @@ def _build_comp_cat_map():
     return _cc
 
 # --- CARGA 1: JUGADORES Y ESTADÍSTICAS (VISTA MAESTRA) ---
-# @st.cache_data(ttl=3600)  # TEMPORALMENTE DESACTIVADO PARA FORZAR RECARGA
+@st.cache_data(ttl=3600)
 def cargar_base_datos():
     """Carga la vista analítica de jugadores.
 
