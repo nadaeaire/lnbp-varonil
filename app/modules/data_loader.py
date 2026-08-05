@@ -157,28 +157,15 @@ def cargar_base_datos():
     try:
         df_master = pd.DataFrame(all_data)
 
-        # DEBUG TEMP — borrar después
-        _sm_raw = all_data[0].get('sMinutes') if all_data else 'NO DATA'
-        _sm_col = df_master['sMinutes'].dtype if 'sMinutes' in df_master.columns else 'FALTA'
-        _sm_sample = df_master['sMinutes'].head(2).tolist() if 'sMinutes' in df_master.columns else []
-        st.warning(f"DB_LOADER: raw_sMin={repr(_sm_raw)} | df_dtype={_sm_col} | df_sample={_sm_sample}")
-
         # Normalizar id_abe a string entero limpio (evita "2323805.0" si la vista devuelve float)
         if 'id_abe' in df_master.columns:
             df_master['id_abe'] = df_master['id_abe'].astype(str).str.split('.').str[0]
 
-        # Limpieza de Minutos
+        # Minutos: siempre pasar por vectorizar_minutos sin importar dtype
         if 'sMinutes' in df_master.columns:
-             if df_master['sMinutes'].dtype == object or df_master['sMinutes'].dtype == str:
-                 df_master['sMinutes'] = vectorizar_minutos(df_master['sMinutes'])
-             else:
-                 df_master['sMinutes'] = pd.to_numeric(df_master['sMinutes'], errors='coerce').fillna(0)
-
+            df_master['sMinutes'] = vectorizar_minutos(df_master['sMinutes'].astype(str))
         if 'Tm_MIN' in df_master.columns:
-             if df_master['Tm_MIN'].dtype == object:
-                 df_master['Tm_MIN'] = vectorizar_minutos(df_master['Tm_MIN'])
-             else:
-                 df_master['Tm_MIN'] = pd.to_numeric(df_master['Tm_MIN'], errors='coerce').fillna(0)
+            df_master['Tm_MIN'] = vectorizar_minutos(df_master['Tm_MIN'].astype(str))
 
         # Fechas
         if 'Fecha' in df_master.columns:

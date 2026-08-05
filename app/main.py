@@ -48,10 +48,12 @@ if 'view_mode' not in st.session_state:
 
 # DEBUG TEMP — borrar después
 try:
-    from modules.data_loader import get_supabase_client as _gsc
+    from modules.data_loader import get_supabase_client as _gsc, _COLS_ANALITICA
     _dsb = _gsc()
-    _dr = _dsb.table("vista_analitica_master").select("sMinutes").limit(3).execute()
-    st.warning(f"RAW API: {_dr.data}")
+    _dr1 = _dsb.table("vista_analitica_master").select("sMinutes").limit(3).execute()
+    _dr2 = _dsb.table("vista_analitica_master").select(_COLS_ANALITICA).limit(3).execute()
+    _sm_full = [r.get('sMinutes') for r in _dr2.data]
+    st.warning(f"SELECT simple→{[r['sMinutes'] for r in _dr1.data]} | SELECT full→{_sm_full}")
 except Exception as _de:
     st.warning(f"RAW API ERROR: {_de}")
 
