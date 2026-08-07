@@ -24,13 +24,13 @@ def check_password():
             try:
                 stored_pwd = st.secrets["passwords"][email]
                 pwd_ok = (stored_pwd == password)
-            except (KeyError, AttributeError):
+            except Exception:
                 pwd_ok = False
 
             if pwd_ok:
                 try:
                     role = st.secrets["roles"][email]
-                except (KeyError, AttributeError):
+                except Exception:
                     role = "basic"
                 st.session_state["password_correct"] = True
                 st.session_state["user_email"] = email
