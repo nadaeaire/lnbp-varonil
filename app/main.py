@@ -21,7 +21,10 @@ import views.equipos_tiros as view_equipos_tiros
 import views.equipos_avg as view_equipos_avg
 import views.players_per28 as view_players_per28
 
-IS_TEST = st.secrets.get("entorno", "produccion") == "test"
+try:
+    IS_TEST = st.secrets["entorno"] == "test"
+except Exception:
+    IS_TEST = False
 
 st.set_page_config(
     page_title="Analytics LNBP Varonil — GravityStats",
