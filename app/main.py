@@ -169,9 +169,11 @@ def reset_view():
     st.session_state.view_mode = 'main'
 
 _VISTAS_POR_ROL = {
-    "basic": ["🤝 Equipos", "📊 Por partido", "🛸 Avanzadas"],
-    "all":   ["🤝 Equipos", "📋 Equipos por partido", "4️⃣ Four Factors",
-              "🎯 Mapa de Tiros Beta", "📊 Por partido", "📐 PER28", "🛸 Avanzadas"],
+    "basic":  ["🤝 Equipos", "📊 Por partido", "🛸 Avanzadas"],
+    "medium": ["🤝 Equipos", "📋 Equipos por partido", "4️⃣ Four Factors",
+               "🎯 Mapa de Tiros Beta", "📊 Por partido", "🛸 Avanzadas"],
+    "all":    ["🤝 Equipos", "📋 Equipos por partido", "4️⃣ Four Factors",
+               "🎯 Mapa de Tiros Beta", "📊 Por partido", "📐 PER28", "🛸 Avanzadas"],
 }
 _rol = st.session_state.get("user_role", "basic")
 opciones_menu = _VISTAS_POR_ROL.get(_rol, _VISTAS_POR_ROL["basic"])
