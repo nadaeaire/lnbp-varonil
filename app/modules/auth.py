@@ -22,14 +22,16 @@ def check_password():
 
         if submit:
             try:
-                stored_pwd = st.secrets["passwords"][email]
-                pwd_ok = (stored_pwd == password)
+                passwords = dict(st.secrets["passwords"])
+                stored_pwd = passwords.get(email)
+                pwd_ok = stored_pwd is not None and str(stored_pwd) == str(password)
             except Exception:
                 pwd_ok = False
 
             if pwd_ok:
                 try:
-                    role = st.secrets["roles"][email]
+                    roles = dict(st.secrets["roles"])
+                    role = roles.get(email, "basic")
                 except Exception:
                     role = "basic"
                 st.session_state["password_correct"] = True
