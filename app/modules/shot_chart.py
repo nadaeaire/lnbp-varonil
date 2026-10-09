@@ -562,7 +562,7 @@ def generar_shot_chart_zonas(df_tiros, titulo="", df_liga=None):
     Colorea cada zona por FG% relativo al promedio de liga (si se provee).
     Requiere columnas x, y (normalizadas 0-100) y r (1=anotado, 0=fallado).
     """
-    from cron.tiro_zonas import classify_shot
+    from modules.tiro_zonas import classify_shot
     from matplotlib.colors import TwoSlopeNorm, Normalize
 
     fig, ax = plt.subplots(figsize=(6, 6), facecolor='#FFFAF0')
