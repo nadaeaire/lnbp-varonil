@@ -476,15 +476,13 @@ def cargar_tiros(competicion_ids: tuple = ()):
     """
     try:
         sb = get_supabase_client()
-        select_cols = "tiro_id,partido_id,equipo_id,player_id,r,x,y,actiontype,subtype,per,competicion_id"
+        select_cols = "tiro_id,partido_id,equipo_id,player_id,r,x,y,actiontype,subtype,per"
         page_size = 1000
         all_data = []
         offset = 0
 
         while True:
             q = sb.table("tiros").select(select_cols)
-            if competicion_ids:
-                q = q.in_("competicion_id", list(competicion_ids))
             response = q.range(offset, offset + page_size - 1).execute()
             if not response.data:
                 break
