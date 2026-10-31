@@ -1,0 +1,48 @@
+name: Cargar temporadas anteriores
+
+on:
+  workflow_dispatch:
+    inputs:
+      temporada:
+        description: "temporada_id (2=2022, 3=2023, 4=2024, 5=2025). Vacío = todas"
+        required: false
+        default: ""
+      max_partidos:
+        description: "Solo para pruebas: máximo de partidos por temporada. Vacío = sin límite"
+        required: false
+        default: ""
+
+# Evita dos corridas a la vez sobre los mismos partidos
+concurrency:
+  group: cargar-temporadas-anteriores
+  cancel-in-progress: false
+
+jobs:
+  cargar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355   # tope de GitHub: 360. El script se detiene solo, entre partidos, a los 340 min.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install -r reportes/temporadas_anteriores/requirements.txt
+
+      - name: Crear config.py desde secretos
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          printf 'SUPABASE_URL = "%s"\nSUPABASE_KEY = "%s"\n' "$SUPABASE_URL" "$SUPABASE_SERVICE_KEY" > config.py
+
+      - name: Ingestar
+        env:
+          TEMPORADA: ${{ inputs.temporada }}
+          MAX_PARTIDOS: ${{ inputs.max_partidos }}
+        run: |
+          ARGS="$TEMPORADA"
+          if [ -n "$MAX_PARTIDOS" ]; then ARGS="$ARGS --max $MAX_PARTIDOS"; fi
+          python -u reportes/temporadas_anteriores/CargarTemporadasAnteriores.py $ARGS --minutos 340

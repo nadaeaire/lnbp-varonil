@@ -1,0 +1,5 @@
+supabase
+requests
+pandas
+numpy
+pytz

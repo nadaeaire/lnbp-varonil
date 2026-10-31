@@ -9,3 +9,17 @@
 !dashboard/pages/**
 !/app/
 !app/**
+
+# ...y lo necesario para la ingesta de temporadas anteriores (GitHub Actions)
+!/.github/
+!/.github/**
+!/reportes/
+!/reportes/temporadas_anteriores/
+!/reportes/temporadas_anteriores/CargarTemporadasAnteriores.py
+!/reportes/temporadas_anteriores/requirements.txt
+!/reportes/postgame/
+!/reportes/postgame/NuevaLiga_DB.py
+!/reportes/postgame/recs/
+!/reportes/postgame/recs/cron/
+!/reportes/postgame/recs/cron/team_utils.py
+!/reportes/postgame/recs/cron/tiro_zonas.py
